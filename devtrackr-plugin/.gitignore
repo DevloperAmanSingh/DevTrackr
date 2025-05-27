@@ -1,0 +1,42 @@
+# Node modules
+node_modules/
+
+# Output folders
+dist/
+out/
+.vscode-test/
+
+# VS Code specific
+.vscode/*.code-workspace
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+.vscode/extensions.json
+
+# Build cache / logs
+*.tsbuildinfo
+*.log
+
+# Compiled JavaScript/Map files
+*.js
+*.js.map
+
+# Plugin storage (runtime)
+*.vsix
+.vscode-test/
+*.njsproj
+
+# Local storage used by the extension
+**/time_data.json
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Env/secrets
+.env
+.env.local
+.env.*.local
+
+# Others
+*.tgz
