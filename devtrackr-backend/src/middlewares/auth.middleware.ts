@@ -9,22 +9,24 @@ export interface AuthRequest extends Request {
   };
 }
 
-export const authMiddleware = async (
-  req: AuthRequest,
+export const verifyToken = (
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  try {
-    const token = req.headers.authorization?.split(" ")[1];
-    
-    if (!token) {
-      return res.status(401).json({ message: "No token provided" });
-    }
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    res.status(401).json({ message: "No token provided" });
+    return;
+  }
 
+  const token = authHeader.split(" ")[1];
+  try {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-    req.user = decoded;
+    (req as AuthRequest).user = { userId: decoded.userId };
     next();
-  } catch (error) {
-    return res.status(401).json({ message: "Invalid token" });
+  } catch (err) {
+    res.status(401).json({ message: "Invalid token" });
+    return;
   }
 };
