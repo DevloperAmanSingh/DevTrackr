@@ -146,6 +146,25 @@ export function activate(context: vscode.ExtensionContext) {
       );
     }
   });
+  vscode.window.onDidChangeWindowState((state) => {
+    if (!state.focused) {
+      console.log("[DevTrackr] Paused");
+      // Save current time before pausing
+      if (currentLang && startTime > 0) {
+        const duration = Math.floor((Date.now() - startTime) / 1000);
+        if (duration > 0) {
+          saveTimeLog(currentLang, currentFile, currentFolder, duration);
+        }
+      }
+      // Reset tracking state
+      startTime = 0;
+    } else {
+      // Resume tracking when window regains focus
+      if (currentLang) {
+        startTime = Date.now();
+      }
+    }
+  });
 }
 
 function trackActivityChange(
