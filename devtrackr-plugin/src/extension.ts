@@ -2,12 +2,14 @@ import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
 import { getTrackedExtensions } from "./config";
+import { syncLogsToServer, validateSessionKey } from "./api";
 
 // ========== Activity Watcher ==========
 let lastActivity = Date.now();
 const IDLE_THRESHOLD = 60 * 1000; // 60 sec
-const SAVE_INTERVAL = 30 * 1000; // 30 seconds
+const SAVE_INTERVAL = 5; // 10 seconds
 let saveTimer: NodeJS.Timeout | null = null;
+let syncInterval: NodeJS.Timeout;
 
 function resetActivityTimer() {
   lastActivity = Date.now();
@@ -57,7 +59,7 @@ export function activate(context: vscode.ExtensionContext) {
   fs.mkdirSync(storagePath, { recursive: true });
   console.log(`[DevTrackr] Storage path: ${storagePath}`);
 
-  sessionKey = context.globalState.get<string>("sessionKey") || null;
+  sessionKey = context.workspaceState.get<string>("sessionKey") || null;
 
   // Start periodic save timer
   startPeriodicSave();
@@ -70,51 +72,38 @@ export function activate(context: vscode.ExtensionContext) {
         ignoreFocusOut: true,
       });
       if (key) {
+        const result = await validateSessionKey(key);
+        console.log(result);
+        if (!(await result).valid) {
+          vscode.window.showErrorMessage(
+            `❌ Invalid session key: ${(await result).error || "Unknown error"}`
+          );
+          return;
+        }
+        // Save session key
+        if (sessionKey) {
+          vscode.window.showInformationMessage(
+            `🔄 Session key updated: ${key} `
+          );
+        }
         sessionKey = key;
-        await context.globalState.update("sessionKey", key);
+        // Store session key in workspace state
+        context.workspaceState.update("sessionKey", key);
+        // Update global state
+        context.globalState.update("sessionKey", key);
+
         vscode.window.showInformationMessage(
           `✅ Connected with session key: ${key}`
         );
       }
-    })
-  );
-
-  // Command: Show Stats
-  context.subscriptions.push(
-    vscode.commands.registerCommand("extension.showStats", () => {
-      const logPath = path.join(storagePath, "time_data.json");
-
-      if (!fs.existsSync(logPath)) {
-        vscode.window.showInformationMessage("No time tracked yet.");
-        return;
-      }
-
-      const data: DailyStats = JSON.parse(fs.readFileSync(logPath, "utf-8"));
-      const today = new Date().toISOString().split("T")[0];
-      const stats = data[today] || { files: {}, folders: {}, languages: {} };
-
-      const msg = [
-        "⏱️ Time Tracked Today:",
-        "\nLanguages:",
-        ...Object.entries(stats.languages).map(
-          ([lang, time]) => `${lang}: ${Math.round(time / 60)} min`
-        ),
-        "\nTop Folders:",
-        ...Object.entries(stats.folders)
-          .sort(([, a], [, b]) => b - a)
-          .slice(0, 5)
-          .map(([folder, time]) => `${folder}: ${Math.round(time / 60)} min`),
-        "\nTop Files:",
-        ...Object.entries(stats.files)
-          .sort(([, a], [, b]) => b - a)
-          .slice(0, 5)
-          .map(
-            ([file, time]) =>
-              `${path.basename(file)}: ${Math.round(time / 60)} min`
-          ),
-      ].join("\n");
-
-      vscode.window.showInformationMessage(msg);
+      syncInterval = setInterval(() => {
+        if (sessionKey) {
+          syncLogsToServer(sessionKey, storagePath);
+          console.log(
+            `[DevTrackr] Syncing logs to server every ${SAVE_INTERVAL} seconds`
+          );
+        }
+      }, 10000);
     })
   );
 
