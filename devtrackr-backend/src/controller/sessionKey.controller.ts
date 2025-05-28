@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { generateSessionKey } from "../services/sessionKey.service";
+import { generateSessionKey, validateSessionKey } from "../services/sessionKey.service";
 import { AuthRequest } from "../middlewares/auth.middleware";
 
 export const generateSessionKeyController = async (
@@ -16,5 +16,18 @@ export const generateSessionKeyController = async (
     res.status(200).json({ sessionKey });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+export const validateSessionKeyController = async (
+  req: Request,
+  res: Response
+) => {
+  const { sessionKey } = req.body;
+  try {
+    const isValid = await validateSessionKey(sessionKey);
+    res.status(200).json({ isValid });
+  } catch (err: any) {
+    res.status(401).json({ error: err.message });
   }
 };
