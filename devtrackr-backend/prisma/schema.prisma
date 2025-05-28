@@ -13,49 +13,20 @@ model User {
   password       String
   sessionKey     String?    @unique
   createdAt      DateTime   @default(now())
-  logs       LogEntry[]
+  logs       DailyLog[]
 }
 
-model LogEntry {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  user      User     @relation(fields: [userId], references: [id])
+model DailyLog {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  user      User      @relation(fields: [userId], references: [id])
   userId    String
+  date      String    // "YYYY-MM-DD"
 
-  date      String   // ISO date, e.g., "2025-05-26"
+  files     Json      // { "/path/to/file": duration }
+  folders   Json      // { "/path/to/folder": duration }
+  languages Json      // { "language": duration }
 
-  // Tracked durations (in seconds)
-  files     FileEntry[]
-  folders   FolderEntry[]
-  languages LanguageEntry[]
+  createdAt DateTime  @default(now())
 
-  createdAt DateTime @default(now())
-
-  @@index([userId, date], name: "by_user_date")
-}
-
-model FileEntry {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  logEntry  LogEntry @relation(fields: [logEntryId], references: [id])
-  logEntryId String
-
-  filePath  String
-  duration  Int
-}
-
-model FolderEntry {
-  id         String    @id @default(auto()) @map("_id") @db.ObjectId
-  logEntry   LogEntry  @relation(fields: [logEntryId], references: [id])
-  logEntryId String
-
-  folderPath String
-  duration   Int
-}
-
-model LanguageEntry {
-  id         String    @id @default(auto()) @map("_id") @db.ObjectId
-  logEntry   LogEntry  @relation(fields: [logEntryId], references: [id])
-  logEntryId String
-
-  language   String
-  duration   Int
-}
+  @@unique([userId, date], name: "userId_date")
+} 
