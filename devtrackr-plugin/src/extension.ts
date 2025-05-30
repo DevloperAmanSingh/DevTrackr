@@ -20,14 +20,18 @@ function isIdle(): boolean {
 }
 
 // ========== Time Tracking ==========
-interface TimeData {
+interface TrackedFolder {
+  totalTime: number;
   files: Record<string, number>;
-  folders: Record<string, number>;
-  languages: Record<string, number>;
+  languages: Set<string>;
+}
+
+interface FolderStats {
+  [folderName: string]: TrackedFolder;
 }
 
 interface DailyStats {
-  [date: string]: TimeData;
+  [date: string]: FolderStats;
 }
 
 let currentLang: string | null = null;
@@ -201,28 +205,56 @@ function saveTimeLog(
 
   let data: DailyStats = {};
   if (fs.existsSync(logPath)) {
-    data = JSON.parse(fs.readFileSync(logPath, "utf-8"));
+    const rawData = JSON.parse(fs.readFileSync(logPath, "utf-8"));
+    // Convert string arrays back to Sets for languages
+    Object.keys(rawData).forEach((date) => {
+      Object.keys(rawData[date]).forEach((folderName) => {
+        rawData[date][folderName].languages = new Set(
+          rawData[date][folderName].languages
+        );
+      });
+    });
+    data = rawData;
   }
 
   if (!data[date]) {
-    data[date] = { files: {}, folders: {}, languages: {} };
+    data[date] = {};
   }
 
-  // Update language stats
-  data[date].languages[language] =
-    (data[date].languages[language] || 0) + duration;
-
-  // Update file stats if file path exists
-  if (file) {
-    data[date].files[file] = (data[date].files[file] || 0) + duration;
-  }
-
-  // Update folder stats if folder path exists
   if (folder) {
-    data[date].folders[folder] = (data[date].folders[folder] || 0) + duration;
+    const folderName = path.basename(folder);
+
+    if (!data[date][folderName]) {
+      data[date][folderName] = {
+        totalTime: 0,
+        files: {},
+        languages: new Set(),
+      };
+    }
+
+    // Update folder stats
+    data[date][folderName].totalTime += duration;
+
+    if (file) {
+      const filename = path.basename(file);
+      data[date][folderName].files[filename] =
+        (data[date][folderName].files[filename] || 0) + duration;
+    }
+
+    data[date][folderName].languages.add(language);
   }
 
-  fs.writeFileSync(logPath, JSON.stringify(data, null, 2));
+  // Convert Sets to arrays before saving to JSON
+  const dataToSave = JSON.parse(
+    JSON.stringify(data, (key, value) => {
+      if (value instanceof Set) {
+        return Array.from(value);
+      }
+      return value;
+    })
+  );
+
+  fs.writeFileSync(logPath, JSON.stringify(dataToSave, null, 2));
   console.log(
     `[DevTrackr] ⏱️ ${duration}s in ${language}${
       file ? ` (${path.basename(file)})` : ""

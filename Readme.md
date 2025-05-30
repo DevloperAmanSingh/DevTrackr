@@ -195,13 +195,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - VS Code Extension API documentation
 - MongoDB documentation
 - React and TailwindCSS communities
-- All our contributors and users
-
-## 📞 Contact
-
-Your Name - [@yourtwitter](https://twitter.com/yourtwitter)
-Project Link: [https://github.com/yourusername/devtrackr](https://github.com/yourusername/devtrackr)
-
 ---
 
 ⭐️ If you like this project, please give it a star on GitHub!
