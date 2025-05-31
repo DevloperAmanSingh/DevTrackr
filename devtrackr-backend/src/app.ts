@@ -1,22 +1,32 @@
 import express from "express";
+import cors from "cors";
+import userRoutes from "./routes/user.routes";
+import logRoutes from "./routes/log.routes";
 import authRoutes from "./routes/auth.routes";
 import sessionKeyRoutes from "./routes/sessionKey.routes";
-import logRoutes from "./routes/log.routes";
-import cors from "cors";
 
 const app = express();
-app.use(express.json());
-// use cors
-app.use(cors({
-  // allow all origins
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  exposedHeaders: ["Content-Type", "Authorization"],
-}));
 
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Routes
+app.use("/api/user", userRoutes);
+app.use("/api/logs", logRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/session-key", sessionKeyRoutes);
-app.use("/api/log", logRoutes);
+// Error handling middleware
+app.use(
+  (
+    err: Error,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    console.error(err.stack);
+    res.status(500).json({ error: "Something went wrong!" });
+  }
+);
 
 export default app;

@@ -9,23 +9,19 @@ datasource db {
 
 model User {
   id         String    @id @default(auto()) @map("_id") @db.ObjectId
-  email          String     @unique
-  password       String
-  sessionKey     String?    @unique 
-  createdAt      DateTime   @default(now())
+  email      String    @unique
+  password   String
+  sessionKey String?   @unique 
+  createdAt  DateTime  @default(now())
   logs       DailyLog[]
 }
 
 model DailyLog {
   id        String    @id @default(auto()) @map("_id") @db.ObjectId
   user      User      @relation(fields: [userId], references: [id])
-  userId    String
+  userId    String    @db.ObjectId
   date      String    // "YYYY-MM-DD"
-
-  files     Json      // { "/path/to/file": duration }
-  folders   Json      // { "/path/to/folder": duration }
-  languages Json      // { "language": duration }
-
+  folders   Json      // { "folderName": { totalTime: number, files: { "filename": duration }, languages: string[] } }
   createdAt DateTime  @default(now())
 
   @@unique([userId, date], name: "userId_date")
