@@ -6,7 +6,7 @@ DevTrackr is a full-stack productivity tool that tracks your coding activity in 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
-![DevTrackr Dashboard Preview](assets/dashboard-preview.png)
+<img width="1710" alt="image" src="https://github.com/user-attachments/assets/97f63d08-b7c5-4fcf-9a38-c86b16b51fd5" />
 
 ## 🎯 Why DevTrackr?
 
