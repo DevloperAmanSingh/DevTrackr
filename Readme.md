@@ -7,6 +7,9 @@ DevTrackr is a full-stack productivity tool that tracks your coding activity in 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
 <img width="1710" alt="image" src="https://github.com/user-attachments/assets/97f63d08-b7c5-4fcf-9a38-c86b16b51fd5" />
+<img width="1709" alt="image" src="https://github.com/user-attachments/assets/7e9ae16c-6bd2-40ce-8e0a-11f26040b728" />
+<img width="1710" alt="image" src="https://github.com/user-attachments/assets/9cd636a2-05b0-4c64-8ec8-740eb4b51773" />
+
 
 ## 🎯 Why DevTrackr?
 
